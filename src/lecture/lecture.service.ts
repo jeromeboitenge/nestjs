@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { PrismaService } from '../prisma/prisma.service';
-
+import * as bcrypt from 'bcrypt';
 
 
 @Injectable()
@@ -18,8 +18,9 @@ export class LectureService {
     if (isEmailExit) {
       throw new ConflictException('User alread exists')
     }
+    const hashedPassword = await bcrypt.hash(createLectureDto.lecturePassword, 12)
     const lecture = await this.prisma.lectures.create({
-      data: createLectureDto
+      data: { ...createLectureDto, lecturePassword: hashedPassword }
     })
 
     return {
@@ -42,11 +43,15 @@ export class LectureService {
   }
 
   async update(id: string, updateLectureDto: UpdateLectureDto) {
+    if (updateLectureDto.lecturePassword) {
+      updateLectureDto.lecturePassword = await bcrypt.hash(updateLectureDto.lecturePassword, 10)
+    }
+
     const lecture = await this.prisma.lectures.update({
       where: {
         lectureId: id
       }
-      , data: UpdateLectureDto
+      , data: updateLectureDto
     })
   }
 
