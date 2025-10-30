@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { LectureService } from './lecture.service';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
+import { QueryLectureDto } from './dto/query-lecture.dto';
 
 @Controller('lecture')
 export class LectureController {
@@ -13,8 +14,8 @@ export class LectureController {
   }
 
   @Get()
-  findAll() {
-    return this.lectureService.findAll();
+  findAll(@Query() query: QueryLectureDto) {
+    return this.lectureService.findAll(query);
   }
 
   @Get(':id')

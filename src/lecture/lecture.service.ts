@@ -3,6 +3,7 @@ import { CreateLectureDto } from './dto/create-lecture.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { QueryLectureDto } from './dto/query-lecture.dto';
 
 
 @Injectable()
@@ -31,10 +32,43 @@ export class LectureService {
 
   }
 
-  async findAll() {
-    const lecture = await this.prisma.lectures.findMany();
-    return lecture;
+  async findAll(query: QueryLectureDto) {
+    const { search, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = query;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    // Optional search by name, email, or other fields
+    if (search) {
+      where.OR = [
+        { lectureName: { contains: search, mode: 'insensitive' } },
+        { lectureEmail: { contains: search, mode: 'insensitive' } },
+        { lecturePhone: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Fetch lectures with filters, pagination, and sorting
+    const lectures = await this.prisma.lectures.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+    });
+
+    // Count total records
+    const total = await this.prisma.lectures.count({ where });
+
+    return {
+      data: lectures,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
   }
+
   // searching lectures using email or id
   async findOne(key: string) {
     const lecture = await this.prisma.lectures.findFirst(

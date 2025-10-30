@@ -22,6 +22,7 @@ model User {
   phone     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  course    Course[]
 }
 
 model Lectures {
@@ -32,4 +33,18 @@ model Lectures {
   lecturePhone    String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  course Course[]
+}
+
+model Course {
+  id        String    @id @default(uuid())
+  studentId String    @unique
+  lectureId String    @unique
+  name      String
+  code      String    @unique
+  createAt  DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lecture   Lectures? @relation(fields: [lectureId], references: [lectureId])
+  student   User?     @relation(fields: [studentId], references: [id])
 }
