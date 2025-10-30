@@ -34,9 +34,10 @@ export class LectureService {
     const lecture = await this.prisma.lectures.findMany();
     return lecture;
   }
-
-  async findOne(id: string) {
-    const lecture = await this.prisma.lectures.findUnique({ where: { lectureId: id } })
+  // searching lectures using email or id
+  async findOne(key: string) {
+    const lecture = await this.prisma.lectures.findFirst(
+      { where: { OR: [{ lectureId: key }, { lectureEmail: key }] } })
     return lecture
   }
 
